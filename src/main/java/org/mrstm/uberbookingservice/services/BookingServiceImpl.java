@@ -10,6 +10,7 @@ import org.mrstm.uberentityservice.models.Booking;
 import org.mrstm.uberentityservice.models.BookingStatus;
 import org.mrstm.uberentityservice.models.Driver;
 import org.mrstm.uberentityservice.models.Passenger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -23,17 +24,18 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final PassengerRepository passengerRepository;
     private final RestTemplate restTemplate;
-    private static final String LOCATION_SERVICE = "http://localhost:3003";
+    @Value("${location.service.url}")
+    private String LOCATION_SERVICE;
 
-    public BookingServiceImpl(BookingRepository bookingRepository, PassengerRepository passengerRepository) {
+    public BookingServiceImpl(BookingRepository bookingRepository, PassengerRepository passengerRepository , RestTemplate restTemplate) {
         this.bookingRepository = bookingRepository;
         this.passengerRepository = passengerRepository;
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
     }
 
     @Override
     public CreateBookingResponseDto createBooking(CreateBookingRequestDto bookingDetails) {
-        Passenger p = passengerRepository.findById(bookingDetails.getPassengerId()).get();
+        Passenger p = passengerRepository.findById(bookingDetails.getPassengerId()).orElseThrow(() -> new RuntimeException("Passenger not found with id: " + bookingDetails.getPassengerId()));
         Booking booking = Booking.builder()
                 .bookingStatus(BookingStatus.ASSIGNING_DRIVER)
                 .startLocation(bookingDetails.getStartLocation())
@@ -59,7 +61,7 @@ public class BookingServiceImpl implements BookingService {
         return CreateBookingResponseDto.builder()
                 .bookingId(newBooking.getId())
                 .bookingStatus(newBooking.getBookingStatus().toString())
-                .driver(Optional.of(newBooking.getDriver()))
+                .driver(Optional.ofNullable(newBooking.getDriver()))
                 .build();
     }
 }
