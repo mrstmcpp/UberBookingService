@@ -4,11 +4,11 @@ import org.mrstm.uberbookingservice.dto.CreateBookingRequestDto;
 import org.mrstm.uberbookingservice.dto.CreateBookingResponseDto;
 import org.mrstm.uberbookingservice.dto.DriverLocationDto;
 import org.mrstm.uberbookingservice.dto.NearbyDriversRequestDto;
+import org.mrstm.uberbookingservice.feignClient.LocationGettingClient;
 import org.mrstm.uberbookingservice.repositories.BookingRepository;
 import org.mrstm.uberbookingservice.repositories.PassengerRepository;
 import org.mrstm.uberentityservice.models.Booking;
 import org.mrstm.uberentityservice.models.BookingStatus;
-import org.mrstm.uberentityservice.models.Driver;
 import org.mrstm.uberentityservice.models.Passenger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +24,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final PassengerRepository passengerRepository;
     private final RestTemplate restTemplate;
+
     @Value("${location.service.url}")
     private String LOCATION_SERVICE;
 
