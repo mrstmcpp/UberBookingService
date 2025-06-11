@@ -2,6 +2,8 @@ package org.mrstm.uberbookingservice.controllers;
 
 import org.mrstm.uberbookingservice.dto.CreateBookingRequestDto;
 import org.mrstm.uberbookingservice.dto.CreateBookingResponseDto;
+import org.mrstm.uberbookingservice.dto.UpdateBookingRequestDto;
+import org.mrstm.uberbookingservice.dto.UpdateBookingResponseDto;
 import org.mrstm.uberbookingservice.services.BookingService;
 import org.mrstm.uberbookingservice.services.BookingServiceImpl;
 import org.springframework.http.HttpStatus;
@@ -12,11 +14,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/booking")
 public class BookingController {
     private final BookingServiceImpl bookingService;
-    private final BookingServiceImpl bookingServiceImpl;
 
-    public BookingController(BookingServiceImpl bookingService, BookingServiceImpl bookingServiceImpl) {
+    public BookingController(BookingServiceImpl bookingService) {
         this.bookingService = bookingService;
-        this.bookingServiceImpl = bookingServiceImpl;
     }
 
     @PostMapping()
@@ -27,7 +27,12 @@ public class BookingController {
 
     @GetMapping("/feign")
     public ResponseEntity<CreateBookingResponseDto> createBookingFeign(@RequestBody CreateBookingRequestDto createBookingRequestDto) {
-        CreateBookingResponseDto response = bookingServiceImpl.createBooking(createBookingRequestDto);
+        CreateBookingResponseDto response = bookingService.createBooking(createBookingRequestDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PatchMapping("{bookingId}")
+    public ResponseEntity<UpdateBookingResponseDto> updateBooking(@RequestBody UpdateBookingRequestDto requestDto , @PathVariable Long bookingId){
+        return new ResponseEntity<>(bookingService.updateBooking(requestDto , bookingId) , HttpStatus.OK);
     }
 }
