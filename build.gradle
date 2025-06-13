@@ -35,7 +35,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     //local publications
-    implementation 'org.mrstm:UberEntityService:0.0.7-SNAPSHOT'
+    implementation 'org.mrstm:UberEntityService:0.0.8-SNAPSHOT'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     // https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-openfeign
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.3.0")

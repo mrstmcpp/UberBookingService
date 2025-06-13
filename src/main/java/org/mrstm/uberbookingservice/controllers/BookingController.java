@@ -4,7 +4,6 @@ import org.mrstm.uberbookingservice.dto.CreateBookingRequestDto;
 import org.mrstm.uberbookingservice.dto.CreateBookingResponseDto;
 import org.mrstm.uberbookingservice.dto.UpdateBookingRequestDto;
 import org.mrstm.uberbookingservice.dto.UpdateBookingResponseDto;
-import org.mrstm.uberbookingservice.services.BookingService;
 import org.mrstm.uberbookingservice.services.BookingServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +30,7 @@ public class BookingController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PatchMapping("{bookingId}")
+    @PostMapping("/{bookingId}")
     public ResponseEntity<UpdateBookingResponseDto> updateBooking(@RequestBody UpdateBookingRequestDto requestDto , @PathVariable Long bookingId){
         return new ResponseEntity<>(bookingService.updateBooking(requestDto , bookingId) , HttpStatus.OK);
     }
