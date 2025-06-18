@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import java.util.concurrent.TimeUnit;
+
 @Configuration
 public class RetrofitConfig {
     private EurekaClient eurekaClient;
@@ -30,12 +32,18 @@ public class RetrofitConfig {
                 .create(LocationServiceApi.class);
     }
 
+    OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30 , TimeUnit.SECONDS)
+            .readTimeout(30 , TimeUnit.SECONDS)
+            .build();
+
     @Bean
     public SocketApi socketApi() {
         return new Retrofit.Builder()
                 .baseUrl(getServiceUrl("UBERCLIENTSOCKETSERVICE"))
                 .addConverterFactory(GsonConverterFactory.create())
-                .client(new OkHttpClient())
+                .client(client)
                 .build()
                 .create(SocketApi.class);
     }

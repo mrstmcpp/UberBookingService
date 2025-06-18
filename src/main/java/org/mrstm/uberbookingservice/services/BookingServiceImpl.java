@@ -119,16 +119,22 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public UpdateBookingResponseDto updateBooking(UpdateBookingRequestDto bookingDetails, Long bookingId) {
-        Optional<Driver> driver = driverRepository.findById(bookingDetails.getDriverId());
-        bookingRepository.updateBookingStatusAndDriverById(bookingId , BookingStatus.SCHEDULED, driver.get());
-        Optional<Booking> booking =  bookingRepository.findById(bookingId);
-        System.out.println("Current booking id is : " + bookingId);
-        return UpdateBookingResponseDto.builder()
+        Driver driver = driverRepository.findById(bookingDetails.getDriverId())
+                .orElseThrow(() -> new RuntimeException("Driver not found with ID: " + bookingDetails.getDriverId()));
+
+        bookingRepository.updateBookingStatusAndDriverById(bookingId, BookingStatus.SCHEDULED, driver);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
+        UpdateBookingResponseDto res = UpdateBookingResponseDto.builder()
                 .bookingId(bookingId)
-                .bookingStatus(booking.get().getBookingStatus())
-                .driver(Optional.ofNullable(booking.get().getDriver()))
+                .bookingStatus(booking.getBookingStatus())
+                .driver((booking.getDriver()))
                 .build();
+        System.out.println("Your ride with : " + driver.getFullName() + " is scheduled.");
+        return res;
     }
+
 
     private void raiseRideRequestAsync(RideRequestDto rideRequestDto) {
         Call<Boolean> call = socketApi.raiseRideRequests(rideRequestDto);
@@ -137,7 +143,7 @@ public class BookingServiceImpl implements BookingService {
             public void onResponse(Call<Boolean> call, Response<Boolean> response) {
                 if(response.isSuccessful() && response.body() != null) {
                     Boolean res = response.body();
-                    System.out.println("Driver response is pending: ");
+                    System.out.println("Booking successful. " + res.toString());
                 }else {
                     System.out.println("Request Failed " + response.message());
                 }
