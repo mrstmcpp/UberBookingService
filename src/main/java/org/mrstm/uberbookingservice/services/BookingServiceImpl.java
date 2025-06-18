@@ -119,20 +119,40 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public UpdateBookingResponseDto updateBooking(UpdateBookingRequestDto bookingDetails, Long bookingId) {
-        Driver driver = driverRepository.findById(bookingDetails.getDriverId())
-                .orElseThrow(() -> new RuntimeException("Driver not found with ID: " + bookingDetails.getDriverId()));
+        try {
+            Driver driver = driverRepository.findById(bookingDetails.getDriverId())
+                    .orElseThrow(() -> new RuntimeException("Driver not found with ID: " + bookingDetails.getDriverId()));
 
-        bookingRepository.updateBookingStatusAndDriverById(bookingId, BookingStatus.SCHEDULED, driver);
+            Booking booking = bookingRepository.findById(bookingId)
+                    .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
 
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
-        UpdateBookingResponseDto res = UpdateBookingResponseDto.builder()
-                .bookingId(bookingId)
-                .bookingStatus(booking.getBookingStatus())
-                .driver((booking.getDriver()))
-                .build();
-        System.out.println("Your ride with : " + driver.getFullName() + " is scheduled.");
-        return res;
+            if (booking.getBookingStatus() == BookingStatus.SCHEDULED) {
+                System.out.println("Driver is already assigned for this booking.");
+                return null;
+            }
+
+            bookingRepository.updateBookingStatusAndDriverById(bookingId, BookingStatus.SCHEDULED, driver);
+
+            // update in-memory object for consistency
+            booking.setBookingStatus(BookingStatus.SCHEDULED);
+            booking.setDriver(driver);
+
+            UpdateBookingResponseDto response = UpdateBookingResponseDto.builder()
+                    .bookingId(bookingId)
+                    .bookingStatus(booking.getBookingStatus())
+                    .driver(booking.getDriver())
+                    .build();
+
+            System.out.println("Your ride with: " + driver.getFullName() + " is scheduled.");
+            return response;
+
+        } catch (RuntimeException e) {
+            System.err.println("Error updating booking: " + e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
+            throw new RuntimeException("Internal server error occurred while updating booking.");
+        }
     }
 
 
