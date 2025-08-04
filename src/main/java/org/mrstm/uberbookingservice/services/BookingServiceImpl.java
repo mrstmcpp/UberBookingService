@@ -156,6 +156,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
 
+
     private void raiseRideRequestAsync(RideRequestDto rideRequestDto) {
         Call<Boolean> call = socketApi.raiseRideRequests(rideRequestDto);
         call.enqueue(new Callback<>() {
@@ -171,8 +172,32 @@ public class BookingServiceImpl implements BookingService {
 
             @Override
             public void onFailure(Call<Boolean> call, Throwable throwable) {
-                throwable.printStackTrace();
+
+                System.out.println("Timeout while searching for driver.");
             }
         });
     }
+
+    @Override
+    public String cancelBooking(CancelBookingRequestDto cancelBookingRequestDto) {
+        Long bookingId = cancelBookingRequestDto.getBooking().getId();
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+
+        if (booking.getBookingStatus() == BookingStatus.IN_RIDE || booking.getBookingStatus() == BookingStatus.COMPLETED) {
+            return "It is not possible to cancel the booking at this stage.";
+        }
+
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
+        return "Booking cancelled successfully.";
+    }
+
+    @Override
+    public void completeBooking(CompleteBookingRequestDto bookingCompleteRequestDto) {
+
+    }
+
+
 }
