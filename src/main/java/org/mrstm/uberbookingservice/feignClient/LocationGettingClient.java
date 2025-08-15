@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "UberLocationService" , url = "http://localhost:3004" , path = "/api/location")
+@FeignClient(name = "UberLocationService" , url = "http://localhost:3005" , path = "/api/v1/location")
 public interface LocationGettingClient {
     @GetMapping("/nearby/drivers")
     public ResponseEntity<DriverLocationDto[]> createBookingUsingFeign(@RequestBody NearbyDriversRequestDto nearbyDriversRequestDto);

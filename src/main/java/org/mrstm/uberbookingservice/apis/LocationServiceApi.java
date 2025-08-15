@@ -11,10 +11,10 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 public interface LocationServiceApi {
-    @POST("/api/location/nearby/drivers")
+    @POST("/api/v1/location/nearby/drivers")
     Call<DriverLocationDto[]> getNearbyDriver(@Body NearbyDriversRequestDto nearbyDriversRequestDto);
 
 
-    @GET("/api/location/driver/{driverId}")
+    @GET("/api/v1/location/driver/{driverId}")
     Call<GetCurrentLocationOfDriverRequestDto[]> getCurrentLocationOfDriver(@PathVariable long driverId);
 }
