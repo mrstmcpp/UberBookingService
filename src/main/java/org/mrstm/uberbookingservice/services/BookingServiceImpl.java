@@ -142,7 +142,13 @@ public class BookingServiceImpl implements BookingService {
                     .bookingStatus(booking.getBookingStatus())
                     .driver(booking.getDriver())
                     .build();
-
+            NotificationDTO notificationDTO = NotificationDTO.builder()
+                    .bookingId(bookingId)
+                    .driverId(driver.getId())
+                    .fullName(driver.getFullName())
+                    .bookingStatus(booking.getBookingStatus().toString())
+                    .build();
+            notifyPassenger(notificationDTO);
             System.out.println("Your ride with: " + driver.getFullName() + " is scheduled.");
             return response;
 
@@ -199,5 +205,25 @@ public class BookingServiceImpl implements BookingService {
 
     }
 
+
+    private void notifyPassenger(NotificationDTO notificationDTO){
+        Call<Boolean> call = socketApi.notifyPassenger(notificationDTO);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                if(response.isSuccessful() && response.body() != null) {
+                    Boolean res = response.body();
+                    System.out.println("Passenger Notified. " + res.toString());
+                }else {
+                    System.out.println("Notification Failed " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Boolean> call, Throwable throwable) {
+                System.out.println("Failed to send notification to passenger.");
+            }
+        });
+    }
 
 }
