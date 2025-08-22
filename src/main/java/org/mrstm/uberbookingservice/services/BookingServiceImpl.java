@@ -3,6 +3,7 @@ package org.mrstm.uberbookingservice.services;
 import org.mrstm.uberbookingservice.apis.LocationServiceApi;
 import org.mrstm.uberbookingservice.apis.SocketApi;
 import org.mrstm.uberbookingservice.dto.*;
+import org.mrstm.uberbookingservice.models.Location;
 import org.mrstm.uberbookingservice.repositories.BookingRepository;
 import org.mrstm.uberbookingservice.repositories.DriverRepository;
 import org.mrstm.uberbookingservice.repositories.PassengerRepository;
@@ -10,6 +11,7 @@ import org.mrstm.uberentityservice.models.Booking;
 import org.mrstm.uberentityservice.models.BookingStatus;
 import org.mrstm.uberentityservice.models.Driver;
 import org.mrstm.uberentityservice.models.Passenger;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import retrofit2.Call;
@@ -205,6 +207,37 @@ public class BookingServiceImpl implements BookingService {
 
     }
 
+    @Override
+    public GetBookingDetailsResponseDTO getBookingDetails(Long bookingId) {
+        Booking booking = bookingRepository.getBookingById(bookingId);
+        if (booking == null) {
+            return null;
+        }
+
+        GetBookingDetailsResponseDTO response = GetBookingDetailsResponseDTO.builder()
+                .bookingId(booking.getId())
+                .bookingStatus(booking.getBookingStatus().toString())
+                .driverId(booking.getDriver().getId())
+                .driverName(booking.getDriver().getFullName())
+                .startTime(booking.getStartTime())
+
+                .startLocation(Location.builder()
+                        .latitude(booking.getStartLocation().getLatitude())
+                        .longitude(booking.getStartLocation().getLongitude())
+                        .build())
+
+                .endLocation(Location.builder()
+                        .latitude(booking.getEndLocation().getLatitude())
+                        .longitude(booking.getEndLocation().getLongitude())
+                        .build())
+
+                .build();
+
+        return (response);
+    }
+
+
+
 
     private void notifyPassenger(NotificationDTO notificationDTO){
         Call<Boolean> call = socketApi.notifyPassenger(notificationDTO);
@@ -224,6 +257,16 @@ public class BookingServiceImpl implements BookingService {
                 System.out.println("Failed to send notification to passenger.");
             }
         });
+    }
+
+
+    @Override
+    public Long getActiveBooking(Long passengerId) {
+        try{
+            return passengerRepository.getActiveBookingByPassengerId(passengerId);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

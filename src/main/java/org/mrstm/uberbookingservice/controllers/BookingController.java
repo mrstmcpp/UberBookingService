@@ -1,10 +1,9 @@
 package org.mrstm.uberbookingservice.controllers;
 
-import org.mrstm.uberbookingservice.dto.CreateBookingRequestDto;
-import org.mrstm.uberbookingservice.dto.CreateBookingResponseDto;
-import org.mrstm.uberbookingservice.dto.UpdateBookingRequestDto;
-import org.mrstm.uberbookingservice.dto.UpdateBookingResponseDto;
+import jakarta.ws.rs.Path;
+import org.mrstm.uberbookingservice.dto.*;
 import org.mrstm.uberbookingservice.services.BookingServiceImpl;
+import org.mrstm.uberentityservice.models.Booking;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,5 +34,14 @@ public class BookingController {
         return new ResponseEntity<>(bookingService.updateBooking(requestDto , bookingId) , HttpStatus.OK);
     }
 
+    @GetMapping("/{bookingId}")
+    public ResponseEntity<GetBookingDetailsResponseDTO> getBookingDetails(@PathVariable Long bookingId){
+        return new ResponseEntity<>(bookingService.getBookingDetails(bookingId) , HttpStatus.OK);
+    }
+
+    @GetMapping("/active/{passengerId}")
+    public ResponseEntity<Long> getActiveBookingOfPassenger(@PathVariable Long passengerId){
+        return new ResponseEntity<>(bookingService.getActiveBooking(passengerId) , HttpStatus.OK);
+    }
 
 }

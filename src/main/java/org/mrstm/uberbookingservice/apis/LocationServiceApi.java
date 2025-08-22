@@ -4,6 +4,7 @@ package org.mrstm.uberbookingservice.apis;
 import org.mrstm.uberbookingservice.dto.DriverLocationDto;
 import org.mrstm.uberbookingservice.dto.GetCurrentLocationOfDriverRequestDto;
 import org.mrstm.uberbookingservice.dto.NearbyDriversRequestDto;
+import org.mrstm.uberbookingservice.models.Location;
 import org.springframework.web.bind.annotation.PathVariable;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -16,5 +17,5 @@ public interface LocationServiceApi {
 
 
     @GET("/api/v1/location/driver/{driverId}")
-    Call<GetCurrentLocationOfDriverRequestDto[]> getCurrentLocationOfDriver(@PathVariable long driverId);
+    Call<Location> getCurrentLocationOfDriver(@PathVariable("driverId") long driverId);
 }
