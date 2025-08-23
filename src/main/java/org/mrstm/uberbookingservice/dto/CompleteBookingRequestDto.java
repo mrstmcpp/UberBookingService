@@ -11,6 +11,7 @@ import org.mrstm.uberentityservice.models.ExactLocation;
 @Setter
 @Builder
 public class CompleteBookingRequestDto {
-    private Booking booking;
-    private ExactLocation currLocation;
+    private Long bookingId;
+    private Long passengerId;
+
 }

@@ -1,5 +1,6 @@
 package org.mrstm.uberbookingservice.services;
 
+import jakarta.ws.rs.NotFoundException;
 import org.mrstm.uberbookingservice.apis.LocationServiceApi;
 import org.mrstm.uberbookingservice.apis.SocketApi;
 import org.mrstm.uberbookingservice.dto.*;
@@ -11,7 +12,6 @@ import org.mrstm.uberentityservice.models.Booking;
 import org.mrstm.uberentityservice.models.BookingStatus;
 import org.mrstm.uberentityservice.models.Driver;
 import org.mrstm.uberentityservice.models.Passenger;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import retrofit2.Call;
@@ -62,6 +62,7 @@ public class BookingServiceImpl implements BookingService {
                 .build();
 
         Booking newBooking = bookingRepository.save(booking);
+        passengerRepository.setActiveBooking(p.getId() , newBooking);
         processNearbyDriverAsync(req , bookingDetails.getPassengerId() , newBooking.getId());
 
 //        ResponseEntity<DriverLocationDto[]> driverList = restTemplate.postForEntity(LOCATION_SERVICE + "/api/location/nearby/drivers", req , DriverLocationDto[].class);
@@ -123,10 +124,10 @@ public class BookingServiceImpl implements BookingService {
     public UpdateBookingResponseDto updateBooking(UpdateBookingRequestDto bookingDetails, Long bookingId) {
         try {
             Driver driver = driverRepository.findById(bookingDetails.getDriverId())
-                    .orElseThrow(() -> new RuntimeException("Driver not found with ID: " + bookingDetails.getDriverId()));
+                    .orElseThrow(() -> new NotFoundException("Driver not found with ID: " + bookingDetails.getDriverId()));
 
             Booking booking = bookingRepository.findById(bookingId)
-                    .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
+                    .orElseThrow(() -> new NotFoundException("Booking not found with ID: " + bookingId));
 
             if (booking.getBookingStatus() == BookingStatus.SCHEDULED) {
                 System.out.println("Driver is already assigned for this booking.");
@@ -191,7 +192,7 @@ public class BookingServiceImpl implements BookingService {
         Long bookingId = cancelBookingRequestDto.getBooking().getId();
 
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+                .orElseThrow(() -> new NotFoundException("Booking not found with id: " + bookingId));
 
         if (booking.getBookingStatus() == BookingStatus.IN_RIDE || booking.getBookingStatus() == BookingStatus.COMPLETED) {
             return "It is not possible to cancel the booking at this stage.";
@@ -199,6 +200,7 @@ public class BookingServiceImpl implements BookingService {
 
         booking.setBookingStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
+        passengerRepository.clearActiveBooking(booking.getPassenger().getId());
         return "Booking cancelled successfully.";
     }
 
