@@ -1,6 +1,6 @@
 package org.mrstm.uberbookingservice.repositories;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.mrstm.uberentityservice.models.Booking;
 import org.mrstm.uberentityservice.models.Passenger;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,4 +23,6 @@ public interface PassengerRepository extends JpaRepository<Passenger, Long> {
     @Transactional
     @Query("UPDATE Passenger p SET p.activeBooking = :booking WHERE p.id = :passengerId")
     void setActiveBooking(@Param("passengerId") Long passengerId , @Param("booking") Booking booking);
+
+    Passenger getPassengerByActiveBookingId(Long activeBookingId);
 }

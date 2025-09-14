@@ -44,4 +44,8 @@ public class BookingController {
         return new ResponseEntity<>(bookingService.getActiveBooking(passengerId) , HttpStatus.OK);
     }
 
+    @PostMapping("/{bookingId}/complete")
+    public ResponseEntity<String> completeBooking(@PathVariable Long bookingId, @RequestBody CompleteBookingRequestDto completeBookingRequestDto){
+        return new ResponseEntity<>(bookingService.completeBooking(bookingId , completeBookingRequestDto) , HttpStatus.OK);
+    }
 }

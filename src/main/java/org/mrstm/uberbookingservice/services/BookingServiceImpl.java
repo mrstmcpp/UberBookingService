@@ -1,5 +1,6 @@
 package org.mrstm.uberbookingservice.services;
 
+
 import jakarta.ws.rs.NotFoundException;
 import org.mrstm.uberbookingservice.apis.LocationServiceApi;
 import org.mrstm.uberbookingservice.apis.SocketApi;
@@ -205,9 +206,22 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public void completeBooking(CompleteBookingRequestDto bookingCompleteRequestDto) {
+    public String completeBooking(Long bookingId , CompleteBookingRequestDto bookingCompleteRequestDto) {
+        Optional<Passenger> p = passengerRepository.findById(bookingCompleteRequestDto.getPassengerId());
+        if(p.isPresent()){
+            p.get().setActiveBooking(null);
+        }
+        int updated = bookingRepository.updateBookingStatus(
+                bookingId,
+                BookingStatus.COMPLETED
+        );
+        if (updated == 0) {
+            throw new NotFoundException("Booking not found");
+        }
 
+        return "Booking Completed successfully.";
     }
+
 
     @Override
     public GetBookingDetailsResponseDTO getBookingDetails(Long bookingId) {

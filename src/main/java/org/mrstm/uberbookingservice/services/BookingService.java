@@ -14,7 +14,7 @@ public interface BookingService {
 
     public String cancelBooking(CancelBookingRequestDto cancelBookingRequestDto);
 
-    public void completeBooking(CompleteBookingRequestDto bookingCompleteRequestDto);
+    public String completeBooking(Long bookingId, CompleteBookingRequestDto bookingCompleteRequestDto);
 
     public GetBookingDetailsResponseDTO getBookingDetails(Long bookingId);
 
