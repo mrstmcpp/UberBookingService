@@ -8,11 +8,9 @@ import org.mrstm.uberbookingservice.dto.*;
 import org.mrstm.uberbookingservice.models.Location;
 import org.mrstm.uberbookingservice.repositories.BookingRepository;
 import org.mrstm.uberbookingservice.repositories.DriverRepository;
+import org.mrstm.uberbookingservice.repositories.OtpRepository;
 import org.mrstm.uberbookingservice.repositories.PassengerRepository;
-import org.mrstm.uberentityservice.models.Booking;
-import org.mrstm.uberentityservice.models.BookingStatus;
-import org.mrstm.uberentityservice.models.Driver;
-import org.mrstm.uberentityservice.models.Passenger;
+import org.mrstm.uberentityservice.models.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import retrofit2.Call;
@@ -27,6 +25,7 @@ import java.util.Optional;
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final PassengerRepository passengerRepository;
+    private final OtpRepository otpRepository;
     private final RestTemplate restTemplate;
     private final LocationServiceApi locationServiceApi;
     private final DriverRepository driverRepository;
@@ -35,13 +34,14 @@ public class BookingServiceImpl implements BookingService {
 
 
     public BookingServiceImpl(BookingRepository bookingRepository,
-                              PassengerRepository passengerRepository ,
+                              PassengerRepository passengerRepository, OtpRepository otpRepository,
                               RestTemplate restTemplate ,
                               LocationServiceApi locationServiceApi,
                               DriverRepository driverRepository ,
                               SocketApi socketApi) {
         this.bookingRepository = bookingRepository;
         this.passengerRepository = passengerRepository;
+        this.otpRepository = otpRepository;
         this.restTemplate = restTemplate;
         this.locationServiceApi = locationServiceApi;
         this.driverRepository = driverRepository;
@@ -136,10 +136,16 @@ public class BookingServiceImpl implements BookingService {
             }
 
             bookingRepository.updateBookingStatusAndDriverById(bookingId, BookingStatus.SCHEDULED, driver);
+            //otp generation
 
+            OTP otp = OTP.make(booking);
+            otpRepository.save(otp);
+//            System.out.println(otp.getCode());
             // update in-memory object for consistency
+            booking.setOtp(otp);
             booking.setBookingStatus(BookingStatus.SCHEDULED);
             booking.setDriver(driver);
+            bookingRepository.save(booking);
 
             UpdateBookingResponseDto response = UpdateBookingResponseDto.builder()
                     .bookingId(bookingId)
@@ -229,9 +235,11 @@ public class BookingServiceImpl implements BookingService {
         if (booking == null) {
             return null;
         }
+//        System.out.println("OTP is : " + booking.getOtp().getCode());
 
         GetBookingDetailsResponseDTO response = GetBookingDetailsResponseDTO.builder()
                 .bookingId(booking.getId())
+                .otp(booking.getOtp().getCode())
                 .bookingStatus(booking.getBookingStatus().toString())
                 .driverId(booking.getDriver().getId())
                 .driverName(booking.getDriver().getFullName())

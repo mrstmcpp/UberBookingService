@@ -19,4 +19,5 @@ public class GetBookingDetailsResponseDTO {
     private Location startLocation;
     private Location endLocation;
     private Date startTime;
+    private String otp;
 }
