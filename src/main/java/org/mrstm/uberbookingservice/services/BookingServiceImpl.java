@@ -10,6 +10,8 @@ import org.mrstm.uberbookingservice.repositories.BookingRepository;
 import org.mrstm.uberbookingservice.repositories.DriverRepository;
 import org.mrstm.uberbookingservice.repositories.OtpRepository;
 import org.mrstm.uberbookingservice.repositories.PassengerRepository;
+import org.mrstm.uberbookingservice.states.BookingContext;
+import org.mrstm.uberbookingservice.states.ScheduledState;
 import org.mrstm.uberentityservice.models.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -158,7 +160,7 @@ public class BookingServiceImpl implements BookingService {
                     .fullName(driver.getFullName())
                     .bookingStatus(booking.getBookingStatus().toString())
                     .build();
-            notifyPassenger(notificationDTO);
+            notifyPassenger(notificationDTO , booking.getPassenger().getId().toString());
             System.out.println("Your ride with: " + driver.getFullName() + " is scheduled.");
             return response;
 
@@ -263,14 +265,15 @@ public class BookingServiceImpl implements BookingService {
 
 
 
-    private void notifyPassenger(NotificationDTO notificationDTO){
-        Call<Boolean> call = socketApi.notifyPassenger(notificationDTO);
+    private void notifyPassenger(NotificationDTO notificationDTO , String passengerId){
+        Call<Boolean> call = socketApi.notifyPassenger(notificationDTO , passengerId);
+
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<Boolean> call, Response<Boolean> response) {
                 if(response.isSuccessful() && response.body() != null) {
                     Boolean res = response.body();
-                    System.out.println("Passenger Notified. " + res.toString());
+                    System.out.println("Passenger Notified. " + res);
                 }else {
                     System.out.println("Notification Failed " + response.message());
                 }
@@ -290,6 +293,23 @@ public class BookingServiceImpl implements BookingService {
             return passengerRepository.getActiveBookingByPassengerId(passengerId);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public UpdateBookingResponseDto updateStatus(UpdateBookingRequestDto bookingRequestDto) {
+        BookingContext booking = new BookingContext();
+
+        booking.setState(new ScheduledState());
+        try{
+            booking.updateStatus(BookingStatus.valueOf(bookingRequestDto.getBookingStatus()));
+            bookingRepository.updateBookingStatus(bookingRequestDto.getBookingId() , BookingStatus.valueOf(bookingRequestDto.getBookingStatus()));
+            return UpdateBookingResponseDto.builder()
+                    .bookingStatus(booking.getStatus())
+                    .bookingId(bookingRequestDto.getBookingId())
+                    .build();
+        } catch (IllegalStateException e) {
+            return null;
         }
     }
 

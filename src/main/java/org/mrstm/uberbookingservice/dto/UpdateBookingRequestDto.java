@@ -9,6 +9,7 @@ import org.mrstm.uberentityservice.models.BookingStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateBookingRequestDto {
+    private Long bookingId;
     private Long driverId;
     private String bookingStatus;
 }

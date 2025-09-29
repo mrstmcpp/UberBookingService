@@ -20,4 +20,6 @@ public interface BookingService {
 
     public Long getActiveBooking(Long passengerId);
 
+    public UpdateBookingResponseDto updateStatus(UpdateBookingRequestDto bookingRequestDto);
+
 }
