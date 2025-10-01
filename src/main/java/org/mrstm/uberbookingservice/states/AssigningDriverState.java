@@ -6,10 +6,12 @@ public class AssigningDriverState implements BookingState{
     @Override
     public void updateStatus(BookingContext bookingContext, BookingStatus newStatus) {
         switch (newStatus){
-            case ARRIVED :
-                bookingContext.setState(new ArrivedDriverState());
+            case SCHEDULED:
+                bookingContext.setState(new ScheduledState());
+                break;
             case CANCELLED:
                 bookingContext.setState(new CancelledState());
+                break;
             default:
                 throw new IllegalStateException("Invalid transition");
         }

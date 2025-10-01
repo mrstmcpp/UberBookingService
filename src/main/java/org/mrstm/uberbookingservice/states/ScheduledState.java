@@ -6,8 +6,8 @@ public class ScheduledState implements BookingState{
     @Override
     public void updateStatus(BookingContext bookingContext, BookingStatus newStatus) {
         switch (newStatus){
-            case ASSIGNING_DRIVER:
-                bookingContext.setState(new AssigningDriverState());
+            case ARRIVED:
+                bookingContext.setState(new ArrivedDriverState());
                 break;
             case CANCELLED:
                 bookingContext.setState(new CancelledState());
@@ -19,6 +19,6 @@ public class ScheduledState implements BookingState{
 
     @Override
     public BookingStatus getStatus() {
-        return BookingStatus.ASSIGNING_DRIVER;
+        return BookingStatus.SCHEDULED;
     }
 }

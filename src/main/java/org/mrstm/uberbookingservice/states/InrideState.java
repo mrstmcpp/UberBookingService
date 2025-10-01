@@ -8,6 +8,7 @@ public class InrideState implements BookingState{
         switch (newStatus){
             case COMPLETED:
                 bookingContext.setState(new CompletedState());
+                break;
             default:
                 throw new IllegalStateException("Invalid transition of states");
         }

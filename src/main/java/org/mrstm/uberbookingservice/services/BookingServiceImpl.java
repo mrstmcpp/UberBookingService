@@ -10,8 +10,7 @@ import org.mrstm.uberbookingservice.repositories.BookingRepository;
 import org.mrstm.uberbookingservice.repositories.DriverRepository;
 import org.mrstm.uberbookingservice.repositories.OtpRepository;
 import org.mrstm.uberbookingservice.repositories.PassengerRepository;
-import org.mrstm.uberbookingservice.states.BookingContext;
-import org.mrstm.uberbookingservice.states.ScheduledState;
+import org.mrstm.uberbookingservice.states.*;
 import org.mrstm.uberentityservice.models.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -152,7 +151,6 @@ public class BookingServiceImpl implements BookingService {
             UpdateBookingResponseDto response = UpdateBookingResponseDto.builder()
                     .bookingId(bookingId)
                     .bookingStatus(booking.getBookingStatus())
-                    .driver(booking.getDriver())
                     .build();
             NotificationDTO notificationDTO = NotificationDTO.builder()
                     .bookingId(bookingId)
@@ -216,17 +214,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public String completeBooking(Long bookingId , CompleteBookingRequestDto bookingCompleteRequestDto) {
         Optional<Passenger> p = passengerRepository.findById(bookingCompleteRequestDto.getPassengerId());
-        if(p.isPresent()){
-            p.get().setActiveBooking(null);
-        }
-        int updated = bookingRepository.updateBookingStatus(
-                bookingId,
-                BookingStatus.COMPLETED
-        );
-        if (updated == 0) {
-            throw new NotFoundException("Booking not found");
-        }
-
+        p.ifPresent(passenger -> passenger.setActiveBooking(null));
         return "Booking Completed successfully.";
     }
 
@@ -300,17 +288,42 @@ public class BookingServiceImpl implements BookingService {
     public UpdateBookingResponseDto updateStatus(UpdateBookingRequestDto bookingRequestDto) {
         BookingContext booking = new BookingContext();
 
-        booking.setState(new ScheduledState());
-        try{
-            booking.updateStatus(BookingStatus.valueOf(bookingRequestDto.getBookingStatus()));
-            bookingRepository.updateBookingStatus(bookingRequestDto.getBookingId() , BookingStatus.valueOf(bookingRequestDto.getBookingStatus()));
+//        Booking dbBooking = bookingRepository.getBookingById(bookingRequestDto.getBookingId());
+        BookingStatus currentStatus = bookingRepository.getBookingStatusById(bookingRequestDto.getBookingId());
+
+//        System.out.println("Current for : " + dbBooking.getId() + " -> " + currentStatus);
+        System.out.println("Requested : " + bookingRequestDto.getBookingStatus());
+
+
+        booking.setState(getStateObject(currentStatus)); // database state would be here
+
+        try {
+            booking.updateStatus(bookingRequestDto.getBookingStatus());
+            bookingRepository.updateBookingStatus(
+                    bookingRequestDto.getBookingId(),
+                    bookingRequestDto.getBookingStatus()
+            );
+
             return UpdateBookingResponseDto.builder()
                     .bookingStatus(booking.getStatus())
                     .bookingId(bookingRequestDto.getBookingId())
                     .build();
         } catch (IllegalStateException e) {
-            return null;
+            throw new IllegalStateException("Transition not allowed: " + currentStatus + " -> " + bookingRequestDto.getBookingStatus());
         }
     }
 
+
+
+    public BookingState getStateObject(BookingStatus bookingStatus){
+        switch (bookingStatus){
+            case SCHEDULED : return new ScheduledState();
+            case ASSIGNING_DRIVER: return new AssigningDriverState();
+            case ARRIVED: return new ArrivedDriverState();
+            case IN_RIDE: return new InrideState();
+            case COMPLETED: return new CompletedState();
+            case CANCELLED: return new CancelledState();
+            default: throw new IllegalStateException("Unknown state of booking");
+        }
+    }
 }

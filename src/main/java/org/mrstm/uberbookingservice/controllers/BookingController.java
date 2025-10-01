@@ -1,6 +1,7 @@
 package org.mrstm.uberbookingservice.controllers;
 
 import jakarta.ws.rs.Path;
+import org.apache.coyote.Response;
 import org.mrstm.uberbookingservice.dto.*;
 import org.mrstm.uberbookingservice.services.BookingServiceImpl;
 import org.mrstm.uberentityservice.models.Booking;
@@ -47,5 +48,10 @@ public class BookingController {
     @PostMapping("/{bookingId}/complete")
     public ResponseEntity<String> completeBooking(@PathVariable Long bookingId, @RequestBody CompleteBookingRequestDto completeBookingRequestDto){
         return new ResponseEntity<>(bookingService.completeBooking(bookingId , completeBookingRequestDto) , HttpStatus.OK);
+    }
+
+    @PutMapping("/updateStatus")
+    public ResponseEntity<UpdateBookingResponseDto> updateBookingStatus(@RequestBody UpdateBookingRequestDto updateBookingRequestDto){
+        return new ResponseEntity<>(bookingService.updateStatus(updateBookingRequestDto) , HttpStatus.OK);
     }
 }

@@ -11,5 +11,5 @@ import org.mrstm.uberentityservice.models.BookingStatus;
 public class UpdateBookingRequestDto {
     private Long bookingId;
     private Long driverId;
-    private String bookingStatus;
+    private BookingStatus bookingStatus;
 }

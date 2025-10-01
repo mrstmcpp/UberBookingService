@@ -9,10 +9,12 @@ public class ArrivedDriverState implements BookingState{
         switch (newStatus){
             case IN_RIDE:
                 bookingContext.setState(new InrideState());
+                break;
             case CANCELLED:
                 bookingContext.setState(new CancelledState());
+                break;
             default:
-                throw new IllegalStateException("Illegal transition of state");
+                throw new IllegalStateException("Illegal transition of state at arrivedstate class");
         }
     }
 
