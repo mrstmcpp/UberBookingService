@@ -286,7 +286,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public UpdateBookingResponseDto updateStatus(UpdateBookingRequestDto bookingRequestDto) {
-        BookingContext booking = new BookingContext();
+        BookingContext booking = new BookingContext(bookingRepository , passengerRepository, driverRepository);
 
 //        Booking dbBooking = bookingRepository.getBookingById(bookingRequestDto.getBookingId());
         BookingStatus currentStatus = bookingRepository.getBookingStatusById(bookingRequestDto.getBookingId());
@@ -298,7 +298,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setState(getStateObject(currentStatus)); // database state would be here
 
         try {
-            booking.updateStatus(bookingRequestDto.getBookingStatus());
+            booking.updateStatus(bookingRequestDto.getBookingStatus() , bookingRequestDto.getBookingId() , bookingRequestDto);
             bookingRepository.updateBookingStatus(
                     bookingRequestDto.getBookingId(),
                     bookingRequestDto.getBookingStatus()
