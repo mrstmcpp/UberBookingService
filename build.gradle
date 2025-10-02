@@ -44,6 +44,9 @@ dependencies {
     implementation('com.squareup.retrofit2:converter-gson:2.4.0')
 
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:4.3.0")
+
+    // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
+    implementation("org.springframework.kafka:spring-kafka:4.0.0-M2")
 }
 
 tasks.named('test') {

@@ -1,0 +1,26 @@
+package org.mrstm.uberbookingservice.services;
+
+import org.mrstm.uberbookingservice.dto.KafkaDtos.BookingConfirmedEvent;
+import org.mrstm.uberbookingservice.dto.KafkaDtos.BookingCreatedEvent;
+import org.mrstm.uberbookingservice.kafka.KafkaTopics;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class KafkaServiceImpl implements KafkaService {
+    private final KafkaTemplate<String , Object> kafkaTemplate;
+
+    public KafkaServiceImpl(KafkaTemplate<String, Object> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    @Override
+    public void publishBookingCreated(String bookingId, BookingCreatedEvent bookingCreatedEvent) {
+        kafkaTemplate.send(KafkaTopics.BOOKING_CREATED , bookingId , bookingCreatedEvent);
+    }
+
+    @Override
+    public void publishBookingConfirmed(String bookingId, BookingConfirmedEvent bookingConfirmedEvent) {
+
+    }
+}
