@@ -1,7 +1,7 @@
 package org.mrstm.uberbookingservice.services;
 
 import org.mrstm.uberbookingservice.dto.KafkaDtos.BookingConfirmedEvent;
-import org.mrstm.uberbookingservice.dto.KafkaDtos.BookingCreatedEvent;
+import org.mrstm.uberentityservice.dto.booking.BookingCreatedEvent;
 import org.mrstm.uberbookingservice.kafka.KafkaTopics;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
