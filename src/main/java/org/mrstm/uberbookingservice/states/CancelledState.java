@@ -11,8 +11,8 @@ public class CancelledState implements BookingState {
         if(newStatus == BookingStatus.CANCELLED){
             bookingContext.getBookingRepository().updateBookingStatus(bookingId , BookingStatus.CANCELLED);
 
-            bookingContext.getPassengerRepository().clearActiveBooking(completeBookingRequestDto.getPassengerId());
-            bookingContext.getDriverRepository().clearActiveBooking(completeBookingRequestDto.getDriverId());
+            bookingContext.getPassengerRepository().clearActiveBooking(Long.parseLong(completeBookingRequestDto.getPassengerId()));
+            bookingContext.getDriverRepository().clearActiveBooking(Long.parseLong(completeBookingRequestDto.getDriverId()));
             bookingContext.setState(this);
         }
         else {

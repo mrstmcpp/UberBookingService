@@ -11,6 +11,7 @@ import org.mrstm.uberbookingservice.repositories.DriverRepository;
 import org.mrstm.uberbookingservice.repositories.OtpRepository;
 import org.mrstm.uberbookingservice.repositories.PassengerRepository;
 import org.mrstm.uberbookingservice.states.*;
+import org.mrstm.uberentityservice.dto.booking.BookingCreatedEvent;
 import org.mrstm.uberentityservice.models.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -18,8 +19,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -31,7 +30,7 @@ public class BookingServiceImpl implements BookingService {
     private final LocationServiceApi locationServiceApi;
     private final DriverRepository driverRepository;
     private final SocketApi socketApi;
-
+    private final KafkaService kafkaService;
 
 
     public BookingServiceImpl(BookingRepository bookingRepository,
@@ -39,7 +38,7 @@ public class BookingServiceImpl implements BookingService {
                               RestTemplate restTemplate ,
                               LocationServiceApi locationServiceApi,
                               DriverRepository driverRepository ,
-                              SocketApi socketApi) {
+                              SocketApi socketApi, KafkaService kafkaService) {
         this.bookingRepository = bookingRepository;
         this.passengerRepository = passengerRepository;
         this.otpRepository = otpRepository;
@@ -47,6 +46,7 @@ public class BookingServiceImpl implements BookingService {
         this.locationServiceApi = locationServiceApi;
         this.driverRepository = driverRepository;
         this.socketApi = socketApi;
+        this.kafkaService = kafkaService;
     }
 
     @Override
@@ -59,13 +59,15 @@ public class BookingServiceImpl implements BookingService {
                 .passenger(p)
                 .build();
         NearbyDriversRequestDto req = NearbyDriversRequestDto.builder()
-                .latitude(bookingDetails.getStartLocation().getLatitude())
-                .longitude(bookingDetails.getStartLocation().getLongitude())
+                .dropLocation(bookingDetails.getEndLocation())
+                .pickupLocation(bookingDetails.getStartLocation())
                 .build();
 
         Booking newBooking = bookingRepository.save(booking);
         passengerRepository.setActiveBooking(p.getId() , newBooking);
 
+
+        //changing to kafka
         processNearbyDriverAsync(req , bookingDetails.getPassengerId() , newBooking.getId());
 
 //        ResponseEntity<DriverLocationDto[]> driverList = restTemplate.postForEntity(LOCATION_SERVICE + "/api/location/nearby/drivers", req , DriverLocationDto[].class);
@@ -87,46 +89,21 @@ public class BookingServiceImpl implements BookingService {
 
 
     private void processNearbyDriverAsync(NearbyDriversRequestDto nearbyDriversRequestDto , Long passengerId , Long bookingId) {
-        Call<DriverLocationDto[]> call = locationServiceApi.getNearbyDriver(nearbyDriversRequestDto);
-        call.enqueue(new Callback<DriverLocationDto[]>() {
-            @Override
-            public void onResponse(Call<DriverLocationDto[]> call, Response<DriverLocationDto[]> response) {
-//                try{
-//                    Thread.sleep(5000);
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-                if(response.isSuccessful() && response.body() != null) {
-                    List<DriverLocationDto> driverLocations = Arrays.asList(response.body());
-                    driverLocations.forEach(location -> {
-                        System.out.println(location.getDriverId() + " " + "Latitude: " + location.getLatitude() + " Longitude: " + location.getLongitude());
-                    });
-
-                    try{
-                        raiseRideRequestAsync(RideRequestDto.builder()
-                                .passengerId(passengerId)
-                                .bookingId(bookingId)
-                                .build());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }else {
-                    System.out.println("Request Failed " + response.message());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<DriverLocationDto[]> call, Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        }); //enqueue method is for async request & execute for sync
+        BookingCreatedEvent event = BookingCreatedEvent.builder()
+                .bookingId(bookingId.toString())
+                .passengerId(passengerId.toString())
+                .pickupLocation(nearbyDriversRequestDto.getPickupLocation())
+                .dropLocation(nearbyDriversRequestDto.getDropLocation())
+                .build();
+        kafkaService.publishBookingCreated(event);
+        System.out.println("BookingCreatedEvent published for bookingId: " + bookingId);
     }
 
 
     @Override
     public UpdateBookingResponseDto updateBooking(UpdateBookingRequestDto bookingDetails, Long bookingId) {
         try {
-            Driver driver = driverRepository.findById(bookingDetails.getDriverId())
+            Driver driver = driverRepository.findById(Long.parseLong(bookingDetails.getDriverId()))
                     .orElseThrow(() -> new NotFoundException("Driver not found with ID: " + bookingDetails.getDriverId()));
 
             Booking booking = bookingRepository.findById(bookingId)
@@ -159,7 +136,6 @@ public class BookingServiceImpl implements BookingService {
                     .fullName(driver.getFullName())
                     .bookingStatus(booking.getBookingStatus().toString())
                     .build();
-            notifyPassenger(notificationDTO , booking.getPassenger().getId().toString());
             System.out.println("Your ride with: " + driver.getFullName() + " is scheduled.");
             return response;
 
@@ -290,7 +266,7 @@ public class BookingServiceImpl implements BookingService {
         BookingContext booking = new BookingContext(bookingRepository , passengerRepository, driverRepository);
 
 //        Booking dbBooking = bookingRepository.getBookingById(bookingRequestDto.getBookingId());
-        BookingStatus currentStatus = bookingRepository.getBookingStatusById(bookingRequestDto.getBookingId());
+        BookingStatus currentStatus = bookingRepository.getBookingStatusById(Long.parseLong(bookingRequestDto.getBookingId()));
 
 //        System.out.println("Current for : " + dbBooking.getId() + " -> " + currentStatus);
         System.out.println("Requested : " + bookingRequestDto.getBookingStatus());
@@ -299,15 +275,15 @@ public class BookingServiceImpl implements BookingService {
         booking.setState(getStateObject(currentStatus)); // database state would be here
 
         try {
-            booking.updateStatus(bookingRequestDto.getBookingStatus() , bookingRequestDto.getBookingId() , bookingRequestDto);
+            booking.updateStatus(bookingRequestDto.getBookingStatus() , Long.parseLong(bookingRequestDto.getBookingId() ), bookingRequestDto);
             bookingRepository.updateBookingStatus(
-                    bookingRequestDto.getBookingId(),
+                    Long.parseLong(bookingRequestDto.getBookingId()),
                     bookingRequestDto.getBookingStatus()
             );
 
             return UpdateBookingResponseDto.builder()
                     .bookingStatus(booking.getStatus())
-                    .bookingId(bookingRequestDto.getBookingId())
+                    .bookingId(Long.parseLong(bookingRequestDto.getBookingId()))
                     .build();
         } catch (IllegalStateException e) {
             throw new IllegalStateException("Transition not allowed: " + currentStatus + " -> " + bookingRequestDto.getBookingStatus());

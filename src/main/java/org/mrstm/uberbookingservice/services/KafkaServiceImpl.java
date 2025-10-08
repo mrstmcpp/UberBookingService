@@ -2,7 +2,8 @@ package org.mrstm.uberbookingservice.services;
 
 import org.mrstm.uberbookingservice.dto.KafkaDtos.BookingConfirmedEvent;
 import org.mrstm.uberentityservice.dto.booking.BookingCreatedEvent;
-import org.mrstm.uberbookingservice.kafka.KafkaTopics;
+
+import org.mrstm.uberentityservice.kafkaTopics.KafkaTopics;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -15,12 +16,11 @@ public class KafkaServiceImpl implements KafkaService {
     }
 
     @Override
-    public void publishBookingCreated(String bookingId, BookingCreatedEvent bookingCreatedEvent) {
-        kafkaTemplate.send(KafkaTopics.BOOKING_CREATED , bookingId , bookingCreatedEvent);
+    public void publishBookingCreated( BookingCreatedEvent bookingCreatedEvent) {
+        kafkaTemplate.send(KafkaTopics.BOOKING_CREATED , bookingCreatedEvent);
     }
 
     @Override
-    public void publishBookingConfirmed(String bookingId, BookingConfirmedEvent bookingConfirmedEvent) {
-
+    public void publishBookingConfirmedNotification(String bookingId, BookingConfirmedEvent bookingConfirmedEvent) {
     }
 }

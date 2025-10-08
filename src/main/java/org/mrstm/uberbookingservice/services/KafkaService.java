@@ -6,6 +6,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface KafkaService {
-    void publishBookingCreated(String bookingId, BookingCreatedEvent bookingCreatedEvent);
-    void publishBookingConfirmed(String bookingId , BookingConfirmedEvent bookingConfirmedEvent);
+    void publishBookingCreated(BookingCreatedEvent bookingCreatedEvent);
+    void publishBookingConfirmedNotification(String bookingId , BookingConfirmedEvent bookingConfirmedEvent);
 }

@@ -20,8 +20,8 @@ public class CompletedState implements BookingState{
 
     public static CompletedState completeBooking(BookingContext bookingContext , Long bookingId, UpdateBookingRequestDto updateBookingRequestDto){
         bookingContext.getBookingRepository().updateBookingStatus(bookingId , BookingStatus.COMPLETED);
-        bookingContext.getPassengerRepository().clearActiveBooking(updateBookingRequestDto.getPassengerId());
-        bookingContext.getDriverRepository().clearActiveBooking(updateBookingRequestDto.getDriverId());
+        bookingContext.getPassengerRepository().clearActiveBooking(Long.parseLong(updateBookingRequestDto.getPassengerId()));
+        bookingContext.getDriverRepository().clearActiveBooking(Long.parseLong(updateBookingRequestDto.getDriverId()));
 
         return new CompletedState();
     }

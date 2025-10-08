@@ -1,11 +1,7 @@
 package org.mrstm.uberbookingservice.controllers;
 
-import jakarta.ws.rs.Path;
-import org.apache.coyote.Response;
 import org.mrstm.uberbookingservice.dto.*;
 import org.mrstm.uberbookingservice.services.BookingServiceImpl;
-import org.mrstm.uberbookingservice.services.BookingServiceImpl2;
-import org.mrstm.uberentityservice.models.Booking;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +9,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/booking")
 public class BookingController {
-    private final BookingServiceImpl2 bookingService;
+    private final BookingServiceImpl bookingService;
 
-    public BookingController(BookingServiceImpl2 bookingService) {
+    public BookingController(BookingServiceImpl bookingService) {
         this.bookingService = bookingService;
     }
 
