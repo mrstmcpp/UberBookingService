@@ -4,6 +4,7 @@ package org.mrstm.uberbookingservice.consumers;
 import org.mrstm.uberbookingservice.dto.UpdateBookingRequestDto;
 import org.mrstm.uberbookingservice.services.BookingService;
 import org.mrstm.uberbookingservice.services.KafkaService;
+import org.mrstm.uberbookingservice.services.RedisService;
 import org.mrstm.uberentityservice.dto.booking.RideResponseByDriver;
 import org.mrstm.uberentityservice.kafkaTopics.KafkaTopics;
 import org.mrstm.uberentityservice.models.BookingStatus;

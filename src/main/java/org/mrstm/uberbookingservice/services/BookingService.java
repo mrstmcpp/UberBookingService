@@ -12,9 +12,9 @@ public interface BookingService {
 
     public UpdateBookingResponseDto updateBooking(UpdateBookingRequestDto bookingDetails , Long bookingId);
 
-    public String cancelBooking(CancelBookingRequestDto cancelBookingRequestDto);
+    public String cancelBooking(CancelBookingRequestDto cancelBookingRequestDto); //api just for development purposes
 
-    public String completeBooking(Long bookingId, CompleteBookingRequestDto bookingCompleteRequestDto);
+    public String completeBooking(Long bookingId, CompleteBookingRequestDto bookingCompleteRequestDto); //api just for development purposes
 
     public GetBookingDetailsResponseDTO getBookingDetails(Long bookingId);
 

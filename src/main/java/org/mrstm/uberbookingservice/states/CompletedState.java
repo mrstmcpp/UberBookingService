@@ -6,6 +6,7 @@ import org.mrstm.uberentityservice.models.BookingStatus;
 
 public class CompletedState implements BookingState{
 
+
     @Override
     public void updateStatus(BookingContext bookingContext, BookingStatus newStatus, Long bookingId, UpdateBookingRequestDto completeBookingRequestDto) {
         throw new IllegalStateException(
@@ -22,7 +23,7 @@ public class CompletedState implements BookingState{
         bookingContext.getBookingRepository().updateBookingStatus(bookingId , BookingStatus.COMPLETED);
         bookingContext.getPassengerRepository().clearActiveBooking(Long.parseLong(updateBookingRequestDto.getPassengerId()));
         bookingContext.getDriverRepository().clearActiveBooking(Long.parseLong(updateBookingRequestDto.getDriverId()));
-
+        bookingContext.getRedisService().deleteDriverBookingPair(updateBookingRequestDto.getDriverId());
         return new CompletedState();
     }
 }

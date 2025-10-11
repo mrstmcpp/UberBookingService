@@ -14,4 +14,6 @@ public interface DriverRepository extends JpaRepository<Driver,Long> {
     @Transactional
     @Query("UPDATE Driver d SET d.activeBooking = null WHERE d.id = :driverId")
     void clearActiveBooking(@Param("driverId") Long driverId);
+
+
 }
